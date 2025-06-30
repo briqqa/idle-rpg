@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Idle RPG v3: Loot Rarities</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      background-color: #1e1e2f;
+      color: #eee;
+      padding: 20px;
+    }
+    #log {
+      background: #111;
+      padding: 10px;
+      height: 250px;
+      overflow-y: scroll;
+      border: 1px solid #444;
+    }
+    .stat {
+      margin: 10px 0;
+    }
+
+    /* Loot Rarity Colors */
+    .common { color: #aaa; }
+    .rare { color: #2ecc71; }
+    .epic { color: #8e44ad; }
+    .legendary { color: #f39c12; }
+    .mythic { color: #e91e63; }
+  </style>
+</head>
+<body>
+  <h1>Idle RPG v3: Loot Rarities</h1>
+  <div class="stat">🧙 Level: <span id="level">1</span></div>
+  <div class="stat">⭐ XP: <span id="xp">0</span> / <span id="xpNeeded">100</span></div>
+  <div class="stat">❤️ HP: <span id="hp">100</span></div>
+  <div class="stat">⚔️ Attack: <span id="attack">10</span></div>
+  <div class="stat">💰 Gold: <span id="gold">0</span></div>
+  <div class="stat">🎒 Loot: <span id="loot">None</span></div>
+  <h2>Battle Log</h2>
+  <div id="log"></div>
+
+  <script>
+    let level = 1;
+    let xp = 0;
+    let xpNeeded = 100;
+    let hp = 100;
+    let attack = 10;
+    let gold = 0;
+    let loot = "None";
+
+    const lootTable = [
+      // Common
+      { name: "Rusty Dagger", bonus: 1 },
+      { name: "Cracked Staff", bonus: 2 },
+      { name: "Worn Leather Gloves", bonus: 2 },
+      { name: "Iron Short Sword", bonus: 3 },
+      { name: "Bone Wand", bonus: 3 },
+
+      // Rare
+      { name: "Sapphire-Infused Blade", bonus: 7 },
+      { name: "Arcane Spellbook", bonus: 8 },
+      { name: "Emerald Axe", bonus: 9 },
+      { name: "Silver Longsword", bonus: 10 },
+      { name: "Enchanted Cloak", bonus: 11 },
+
+      // Epic
+      { name: "Phoenix Feather Staff", bonus: 15 },
+      { name: "Dagger of the Night", bonus: 17 },
+      { name: "Frostbrand Greatsword", bonus: 20 },
+      { name: "Runeblade of the Void", bonus: 22 },
+
+      // Legendary
+      { name: "Blade of Eternal Flame", bonus: 30 },
+      { name: "Soulrender Scythe", bonus: 35 },
+      { name: "Wrath of the Ancients", bonus: 40 },
+      { name: "Starforged Hammer", bonus: 50 },
+
+      // Mythic
+      { name: "Sword of Infinity", bonus: 65 },
+      { name: "Celestial Staff of Eternity", bonus: 70 },
+      { name: "Mythic Dragonfang", bonus: 85 },
+      { name: "Worldbreaker Axe", bonus: 100 }
+    ];
+
+    const logEl = document.getElementById("log");
+
+    function log(msg) {
+      logEl.innerHTML += msg + "<br>";
+      logEl.scrollTop = logEl.scrollHeight;
+    }
+
+    function getRarity(bonus) {
+      if (bonus <= 3) return "common";
+      if (bonus <= 11) return "rare";
+      if (bonus <= 22) return "epic";
+      if (bonus <= 50) return "legendary";
+      return "mythic";
+    }
+
+    function fightMonster() {
+      const monsterHp = Math.floor(20 + Math.random() * 30 + level * 5);
+      const monsterGold = Math.floor(5 + Math.random() * 10 + level);
+      const monsterXP = Math.floor(10 + Math.random() * 15);
+
+      log(⚔️ Fighting a magic beast (HP: ${monsterHp})...);
+
+      setTimeout(() => {
+        log(💀 Defeated the beast! Gained ${monsterGold} gold and ${monsterXP} XP.);
+        gold += monsterGold;
+        gainXP(monsterXP);
+
+        // Loot drop (50% chance)
+        if (Math.random() < 0.5) {
+          let item;
+          const roll = Math.random();
+          if (roll < 0.5) {
+            item = lootTable[Math.floor(Math.random() * 5)]; // Common
+          } else if (roll < 0.8) {
+            item = lootTable[5 + Math.floor(Math.random() * 5)]; // Rare
+          } else if (roll < 0.95) {
+            item = lootTable[10 + Math.floor(Math.random() * 4)]; // Epic
+          } else if (roll < 0.99) {
+            item = lootTable[14 + Math.floor(Math.random() * 4)]; // Legendary
+          } else {
+            item = lootTable[18 + Math.floor(Math.random() * 4)]; // Mythic
+          }
+
+          const rarity = getRarity(item.bonus);
+          log(🎁 <span class="${rarity}">[${rarity.toUpperCase()}]</span> Found loot: <span class="${rarity}"><b>${item.name}</b></span> (+${item.bonus} atk));
+          attack += item.bonus;
+          loot = item.name;
+        }
+
+        updateStats();
+      }, 1000);
+    }
+
+    function gainXP(amount) {
+      xp += amount;
+      if (xp >= xpNeeded) {
+        levelUp();
+      }
+    }
+
+    function levelUp() {
+      level++;
+      xp = xp - xpNeeded;
+      xpNeeded = Math.floor(xpNeeded * 1.5);
+      attack += 5;
+      hp += 20;
+      log(🌟 <b>You leveled up!</b> Now level ${level}. +5 attack, +20 HP!);
+    }
+
+    function updateStats() {
+      document.getElementById("level").textContent = level;
+      document.getElementById("xp").textContent = xp;
+      document.getElementById("xpNeeded").textContent = xpNeeded;
+      document.getElementById("hp").textContent = hp;
+      document.getElementById("attack").textContent = attack;
+      document.getElementById("gold").textContent = gold;
+      document.getElementById("loot").textContent = loot;
+    }
+
+    setInterval(fightMonster, 3000);
+    updateStats();
+    log("🧙 Welcome to Idle RPG v3. Loot with style!");
+  </script>
+</body>
+</html>
